@@ -60,6 +60,14 @@
             color: var(--calculator-text);
         }
 
+        .app {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+            width: 100%;
+            max-width: 760px;
+        }
+
         .calculator {
             background: var(--calculator-bg);
             color: var(--calculator-text);
@@ -171,37 +179,129 @@
         .zero {
             grid-column: span 2;
         }
+
+        .history {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 12px;
+            background: var(--button-bg);
+            color: var(--button-text);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            gap: 10px;
+        }
+
+        .history-title {
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        .history-clear {
+            padding: 8px 12px;
+            font-size: 0.9rem;
+            border: none;
+            border-radius: 8px;
+            background: var(--clear-bg);
+            color: #ffffff;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        .history-clear:hover {
+            background: var(--clear-hover);
+            transform: translateY(-1px);
+        }
+
+        .history-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 220px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            border-radius: 10px;
+            background: var(--calculator-bg);
+            color: var(--calculator-text);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            font-size: 0.95rem;
+        }
+
+        .history-expression {
+            opacity: 0.8;
+        }
+
+        .history-empty {
+            text-align: center;
+            opacity: 0.7;
+            padding: 12px 0;
+        }
+
+        @media (max-width: 720px) {
+            .app {
+                flex-direction: column;
+            }
+
+            .history {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="calculator">
-        <div class="theme-toggle">
-            <button id="themeToggle" class="theme-button" aria-pressed="false">☀️ Светлая тема</button>
+    <div class="app">
+        <div class="history">
+            <div class="history-header">
+                <div class="history-title">Журнал операций</div>
+                <button class="history-clear" onclick="clearHistory()">Очистить</button>
+            </div>
+            <ul class="history-list" id="historyList">
+                <li class="history-empty">Журнал пуст</li>
+            </ul>
         </div>
-        <div class="display" id="display">0</div>
-        <div class="buttons">
-            <button class="clear" onclick="clearDisplay()">C</button>
-            <button class="operator" onclick="appendOperator('/')">/</button>
-            <button class="operator" onclick="appendOperator('*')">×</button>
-            <button class="operator" onclick="deleteLast()">⌫</button>
-            
-            <button onclick="appendNumber('7')">7</button>
-            <button onclick="appendNumber('8')">8</button>
-            <button onclick="appendNumber('9')">9</button>
-            <button class="operator" onclick="appendOperator('-')">-</button>
-            
-            <button onclick="appendNumber('4')">4</button>
-            <button onclick="appendNumber('5')">5</button>
-            <button onclick="appendNumber('6')">6</button>
-            <button class="operator" onclick="appendOperator('+')">+</button>
-            
-            <button onclick="appendNumber('1')">1</button>
-            <button onclick="appendNumber('2')">2</button>
-            <button onclick="appendNumber('3')">3</button>
-            <button class="equals" onclick="calculate()" rowspan="2">=</button>
-            
-            <button class="zero" onclick="appendNumber('0')">0</button>
-            <button onclick="appendDecimal()">.</button>
+
+        <div class="calculator">
+            <div class="theme-toggle">
+                <button id="themeToggle" class="theme-button" aria-pressed="false">☀️ Светлая тема</button>
+            </div>
+            <div class="display" id="display">0</div>
+            <div class="buttons">
+                <button class="clear" onclick="clearDisplay()">C</button>
+                <button class="operator" onclick="appendOperator('/')">/</button>
+                <button class="operator" onclick="appendOperator('*')">×</button>
+                <button class="operator" onclick="deleteLast()">⌫</button>
+                
+                <button onclick="appendNumber('7')">7</button>
+                <button onclick="appendNumber('8')">8</button>
+                <button onclick="appendNumber('9')">9</button>
+                <button class="operator" onclick="appendOperator('-')">-</button>
+                
+                <button onclick="appendNumber('4')">4</button>
+                <button onclick="appendNumber('5')">5</button>
+                <button onclick="appendNumber('6')">6</button>
+                <button class="operator" onclick="appendOperator('+')">+</button>
+                
+                <button onclick="appendNumber('1')">1</button>
+                <button onclick="appendNumber('2')">2</button>
+                <button onclick="appendNumber('3')">3</button>
+                <button class="equals" onclick="calculate()" rowspan="2">=</button>
+                
+                <button class="zero" onclick="appendNumber('0')">0</button>
+                <button onclick="appendDecimal()">.</button>
+            </div>
         </div>
     </div>
 
@@ -211,6 +311,8 @@
         let shouldResetDisplay = false;
         const themeToggle = document.getElementById('themeToggle');
         const THEME_KEY = 'calculator-theme';
+        const historyList = document.getElementById('historyList');
+        const history = [];
 
         function updateDisplay() {
             display.textContent = currentInput;
@@ -295,6 +397,7 @@
                     currentInput = 'Ошибка';
                 } else {
                     currentInput = result.toString();
+                    addToHistory(expression, currentInput);
                 }
                 
                 updateDisplay();
@@ -353,7 +456,43 @@
             }
         });
 
+        function renderHistory() {
+            historyList.innerHTML = '';
+
+            if (history.length === 0) {
+                historyList.innerHTML = '<li class="history-empty">Журнал пуст</li>';
+                return;
+            }
+
+            history.forEach(item => {
+                const listItem = document.createElement('li');
+                listItem.className = 'history-item';
+                listItem.innerHTML = `
+                    <span class="history-expression">${item.expression}</span>
+                    <strong>${item.result}</strong>
+                `;
+                historyList.appendChild(listItem);
+            });
+        }
+
+        function addToHistory(expression, result) {
+            // Показываем выражение так, как его видел пользователь
+            const displayExpression = expression.replace(/\*/g, '×');
+
+            history.unshift({ expression: displayExpression, result });
+            if (history.length > 15) {
+                history.pop();
+            }
+            renderHistory();
+        }
+
+        function clearHistory() {
+            history.length = 0;
+            renderHistory();
+        }
+
         initTheme();
+        renderHistory();
     </script>
 </body>
 </html>
