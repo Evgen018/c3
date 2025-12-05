@@ -11,28 +11,94 @@
             box-sizing: border-box;
         }
 
+        :root {
+            --page-bg: linear-gradient(135deg, #dbeafe 0%, #c7d2fe 50%, #a5b4fc 100%);
+            --calculator-bg: #ffffff;
+            --calculator-text: #1f2933;
+            --display-bg: #1a1a1a;
+            --display-text: #ffffff;
+            --button-bg: #f0f0f0;
+            --button-text: #333333;
+            --button-hover: #e0e0e0;
+            --shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            --operator-bg: #667eea;
+            --operator-hover: #5568d3;
+            --operator-text: #ffffff;
+            --equals-bg: #764ba2;
+            --equals-hover: #653a8a;
+            --clear-bg: #ff6b6b;
+            --clear-hover: #ee5a5a;
+        }
+
+        .dark {
+            --page-bg: linear-gradient(135deg, #0f172a 0%, #111827 100%);
+            --calculator-bg: #1f2937;
+            --calculator-text: #e5e7eb;
+            --display-bg: #0b1021;
+            --display-text: #e5e7eb;
+            --button-bg: #273445;
+            --button-text: #e5e7eb;
+            --button-hover: #324155;
+            --shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+            --operator-bg: #8b5cf6;
+            --operator-hover: #7c3aed;
+            --operator-text: #f3f4f6;
+            --equals-bg: #ec4899;
+            --equals-hover: #db2777;
+            --clear-bg: #ef4444;
+            --clear-hover: #dc2626;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--page-bg);
             padding: 20px;
+            color: var(--calculator-text);
         }
 
         .calculator {
-            background: #ffffff;
+            background: var(--calculator-bg);
+            color: var(--calculator-text);
             border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            box-shadow: var(--shadow);
             padding: 30px;
             max-width: 400px;
             width: 100%;
         }
 
+        .theme-toggle {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 15px;
+        }
+
+        .theme-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            border: none;
+            border-radius: 30px;
+            background: var(--button-bg);
+            color: var(--button-text);
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+            transition: all 0.2s;
+            font-weight: 600;
+        }
+
+        .theme-button:hover {
+            background: var(--button-hover);
+            transform: translateY(-2px);
+        }
+
         .display {
-            background: #1a1a1a;
-            color: #ffffff;
+            background: var(--display-bg);
+            color: var(--display-text);
             font-size: 2.5rem;
             padding: 20px;
             text-align: right;
@@ -53,7 +119,7 @@
         }
 
         button {
-            background: #f0f0f0;
+            background: var(--button-bg);
             border: none;
             border-radius: 10px;
             font-size: 1.5rem;
@@ -61,11 +127,11 @@
             cursor: pointer;
             transition: all 0.2s;
             font-weight: 600;
-            color: #333;
+            color: var(--button-text);
         }
 
         button:hover {
-            background: #e0e0e0;
+            background: var(--button-hover);
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
@@ -76,30 +142,30 @@
         }
 
         .operator {
-            background: #667eea;
-            color: #ffffff;
+            background: var(--operator-bg);
+            color: var(--operator-text);
         }
 
         .operator:hover {
-            background: #5568d3;
+            background: var(--operator-hover);
         }
 
         .equals {
-            background: #764ba2;
+            background: var(--equals-bg);
             color: #ffffff;
         }
 
         .equals:hover {
-            background: #653a8a;
+            background: var(--equals-hover);
         }
 
         .clear {
-            background: #ff6b6b;
+            background: var(--clear-bg);
             color: #ffffff;
         }
 
         .clear:hover {
-            background: #ee5a5a;
+            background: var(--clear-hover);
         }
 
         .zero {
@@ -109,6 +175,9 @@
 </head>
 <body>
     <div class="calculator">
+        <div class="theme-toggle">
+            <button id="themeToggle" class="theme-button" aria-pressed="false">☀️ Светлая тема</button>
+        </div>
         <div class="display" id="display">0</div>
         <div class="buttons">
             <button class="clear" onclick="clearDisplay()">C</button>
@@ -140,9 +209,31 @@
         let display = document.getElementById('display');
         let currentInput = '0';
         let shouldResetDisplay = false;
+        const themeToggle = document.getElementById('themeToggle');
+        const THEME_KEY = 'calculator-theme';
 
         function updateDisplay() {
             display.textContent = currentInput;
+        }
+
+        function applyTheme(theme) {
+            document.body.classList.toggle('dark', theme === 'dark');
+            const label = theme === 'dark' ? '🌙 Тёмная тема' : '☀️ Светлая тема';
+            themeToggle.textContent = label;
+            themeToggle.setAttribute('aria-pressed', theme === 'dark');
+        }
+
+        function initTheme() {
+            const savedTheme = localStorage.getItem(THEME_KEY);
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const initialTheme = savedTheme || (prefersDark ? 'dark' : 'light');
+            applyTheme(initialTheme);
+
+            themeToggle.addEventListener('click', () => {
+                const nextTheme = document.body.classList.contains('dark') ? 'light' : 'dark';
+                applyTheme(nextTheme);
+                localStorage.setItem(THEME_KEY, nextTheme);
+            });
         }
 
         function appendNumber(number) {
@@ -261,6 +352,8 @@
                 deleteLast();
             }
         });
+
+        initTheme();
     </script>
 </body>
 </html>
